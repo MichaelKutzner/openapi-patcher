@@ -34,11 +34,26 @@ case class BadMap(type_ref: String)
 
 object BadMap:
   def unapply(json: Json): Option[BadMap] =
+    def createBadMap(ref: String) =
+      JsonObject(
+        ("type", Json.fromString("object")),
+        (
+          "properties",
+          JsonObject(
+            ("@type", createRef("#/definitions/mobidp.common.String")),
+            ("key", createRef("#/definitions/mobidp.common.String")),
+            ("value", createRef(ref)),
+          ).toJson,
+        ),
+      ).toJson
+
     root.properties.value.`$ref`.string
       .getOption(json)
-      .flatMap {
-        case ref @ s"#/definitions/${t}" => Some(BadMap(ref))
-        case _                           => None
+      .filter(_.startsWith("#/definitions/"))
+      .flatMap { ref =>
+        if json == createBadMap(ref) then {
+          Some(BadMap(ref))
+        } else { None }
       }
 
 case class FixedMap(type_ref: String):
@@ -52,6 +67,10 @@ case class FixedMap(type_ref: String):
         ),
       ).toJson),
     ).toJson
+
+def createRef(ref: String): Json = JsonObject(
+  ("$ref", Json.fromString(ref)),
+).toJson
 
 // extension (json: Json) def toPatcher = json.asObject.get
 // extension (json: Option[Json]) def toPatcher = json.flatMap(_.asObject).get

@@ -44,4 +44,20 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
       assertEquals(fixed, expected)
     },
   )
+
+  test("fixMaps minimalValueTypeExample keepUnmodified") {
+    val json = """
+    {
+      "type": "object",
+      "properties": {
+        "value": { "$ref": "#/definitions/mobidp.common.String" }
+      }
+    }
+    """
+
+    val fixed = JsonSchemaPatcher.fromString(json).map(_.fixMaps).map(_.json)
+    val expected = parseJson(json)
+
+    assertEquals(fixed, expected)
+  }
 }
