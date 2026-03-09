@@ -40,8 +40,8 @@ object BadMap:
         (
           "properties",
           JsonObject(
-            ("@type", createRef("#/definitions/mobidp.common.String")),
-            ("key", createRef("#/definitions/mobidp.common.String")),
+            ("@type", createRef(s"#/${definition_path}/mobidp.common.String")),
+            ("key", createRef(s"#/${definition_path}/mobidp.common.String")),
             ("value", createRef(ref)),
           ).toJson,
         ),
@@ -49,7 +49,7 @@ object BadMap:
 
     root.properties.value.`$ref`.string
       .getOption(json)
-      .filter(_.startsWith("#/definitions/"))
+      .filter(_.startsWith(s"#/${definition_path}/"))
       .flatMap { ref =>
         if json == createBadMap(ref) then {
           Some(BadMap(ref))
@@ -71,6 +71,8 @@ case class FixedMap(type_ref: String):
 def createRef(ref: String): Json = JsonObject(
   ("$ref", Json.fromString(ref)),
 ).toJson
+
+val definition_path = "definitions"
 
 // extension (json: Json) def toPatcher = json.asObject.get
 // extension (json: Option[Json]) def toPatcher = json.flatMap(_.asObject).get
