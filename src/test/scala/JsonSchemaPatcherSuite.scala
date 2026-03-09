@@ -26,6 +26,7 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
         """)
         .map(_.fixMaps)
         .map(_.json)
+
       val expected = parseJson(s"""
       {
         "ok": {
@@ -56,8 +57,98 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
     """
 
     val fixed = JsonSchemaPatcher.fromString(json).map(_.fixMaps).map(_.json)
-    val expected = parseJson(json)
 
+    val expected = parseJson(json)
+    assertEquals(fixed, expected)
+  }
+
+  test("dropEmptyOverrides withEmptyRedefinedProperties dropAll") {
+    val json = """
+    {
+      "definitions": {
+        "root": {
+          "properties": {
+            "a": { "schema": { "type": "number" }},
+            "b": { "schema": { "type": "string" }},
+            "c": { "schema": { "type": "string" }}
+          }
+        },
+        "super": {
+          "allOf": [{
+            "$ref": "#/definitions/root"
+          }],
+          "properties": {
+            "b": { "schema": { "tpe": "number" }},
+            "c": { },
+            "e": { "schema": { "type": "number" }}
+          }
+        },
+        "derived": {
+          "allOf": [{
+            "$ref": "#/definitions/super"
+          }],
+          "properties": {
+            "b": { },
+            "c": { "schema": { "type": "number" }},
+            "e": { },
+            "f": { "schema": { "type": "number" }}
+          }
+        },
+        "derived2": {
+          "allOf": [{
+            "$ref": "#/definitions/root"
+          }],
+          "properties": {
+            "c": { },
+            "g": { "schema": { "type": "string" }}
+          }
+        }
+      }
+    }
+    """
+
+    val fixed =
+      JsonSchemaPatcher.fromString(json).map(_.dropEmptyOverrides).map(_.json)
+
+    val expected = parseJson("""
+    {
+      "definitions": {
+        "root": {
+          "properties": {
+            "a": { "schema": { "type": "number" }},
+            "b": { "schema": { "type": "string" }},
+            "c": { "schema": { "type": "string" }}
+          }
+        },
+        "super": {
+          "allOf": [{
+            "$ref": "#/definitions/root"
+          }],
+          "properties": {
+            "b": { "schema": { "tpe": "number" }},
+            "e": { "schema": { "type": "number" }}
+          }
+        },
+        "derived": {
+          "allOf": [{
+            "$ref": "#/definitions/super"
+          }],
+          "properties": {
+            "c": { "schema": { "type": "number" }},
+            "f": { "schema": { "type": "number" }}
+          }
+        },
+        "derived2": {
+          "allOf": [{
+            "$ref": "#/definitions/root"
+          }],
+          "properties": {
+            "g": { "schema": { "type": "string" }}
+          }
+        }
+      }
+    }
+    """)
     assertEquals(fixed, expected)
   }
 }
