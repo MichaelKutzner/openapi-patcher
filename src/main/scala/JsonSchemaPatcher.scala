@@ -31,7 +31,7 @@ case class JsonSchemaPatcher(json: JsonObject):
           if isEmpty(value) && derivedProperties.contains(key) then { None }
           else { Some(value) },
         )(o),
-      )(json),
+      ),
     )
 
   def fixDuration: JsonSchemaPatcher =
@@ -61,17 +61,15 @@ case class JsonSchemaPatcher(json: JsonObject):
         key match
           case `definition` => f(value)
           case _            => value,
-      )(json),
+      ),
     )
 
-  def _forEachDefinition(f: (String, JsonObject) => JsonObject)(
-      j: JsonObject,
-  ): JsonObject =
+  def _forEachDefinition(f: (String, JsonObject) => JsonObject): JsonObject =
     def modifyEachDefinition(o: JsonObject): Json =
       JsonObject
         .fromMap(o.toMap.map((k, v) => (k -> f(k, v.asObject.get).toJson)))
         .toJson
-    j.toJson.hcursor
+    json.toJson.hcursor
       .downField(definition_path)
       .withFocus(_.withObject(modifyEachDefinition))
       .top
