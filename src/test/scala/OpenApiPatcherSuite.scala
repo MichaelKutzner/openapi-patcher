@@ -165,7 +165,27 @@ class OpenApiPatcherSuite extends munit.FunSuite {
     assertEquals(patchedSpec, expected)
   }
 
-  test("integrationTest patchFullExample getExpectedSpecification".ignore) {
-    ???
+  test("integrationTest patchFullExample getExpectedSpecification") {
+    def loadFile(path: String): String =
+      val basePath = "src/test/scala/"
+      scala.io.Source.fromFile(basePath + path).getLines.mkString("\n")
+    val patcher = OpenApiPatcher(
+      parseYaml(
+        loadFile("./test_resources/full_example/openapi_specification.yaml"),
+      ),
+      parseJson(loadFile("./test_resources/full_example/json_schema.json")),
+    )
+
+    val fixed = patcher.fixAll
+
+    val expectedSpecification = parseJson(
+      loadFile("./test_resources/full_example/expected_specification.json"),
+    ).get
+    val expectedSchema =
+      parseJson(
+        loadFile("./test_resources/full_example/expected_schema.json"),
+      ).get
+    assertEquals(fixed.mergedOpenApiSpec, expectedSpecification)
+    assertEquals(fixed.schema, expectedSchema)
   }
 }

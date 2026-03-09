@@ -101,7 +101,7 @@ case class JsonSchemaPatcher(json: JsonObject):
       .withFocus(_.withObject(modifyEachProperty))
       .top
       .flatMap(_.asObject)
-      .get
+      .getOrElse(j)
 
   def _derivedProperties(o: JsonObject): List[String] =
     def getParents(o: Json): List[String] =

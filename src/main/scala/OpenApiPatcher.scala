@@ -12,6 +12,15 @@ case class OpenApiPatcher(
     openApiSpec: JsonObject,
     schemaPatcher: JsonSchemaPatcher,
 ):
+
+  def fixAll: OpenApiPatcher =
+    fixMaps.dropEmptyOverrides.fixDuration
+
+  def fixMaps = OpenApiPatcher(openApiSpec, schemaPatcher.fixMaps)
+
+  def dropEmptyOverrides =
+    OpenApiPatcher(openApiSpec, schemaPatcher.dropEmptyOverrides)
+
   def fixDuration = OpenApiPatcher(openApiSpec, schemaPatcher.fixDuration)
 
   def mergedOpenApiSpec: JsonObject =
@@ -25,6 +34,8 @@ case class OpenApiPatcher(
           .toJson,
       ),
     )
+
+  def schema: JsonObject = schemaPatcher.json
 
   def _patchAllRefs(path: List[String])(json: JsonObject): JsonObject =
     val newPath = path.reduceLeft(_ + '/' + _)
