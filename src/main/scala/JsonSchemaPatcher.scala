@@ -12,14 +12,6 @@ import monocle.function.Plated
 
 case class JsonSchemaPatcher(json: JsonObject):
 
-  def definitions: List[(String, Json)] =
-    json.toJson.hcursor
-      .downField(definition_path)
-      .focus
-      .flatMap(_.asObject)
-      .toList
-      .flatMap(_.toList)
-
   def fixMaps: JsonSchemaPatcher =
     _modifyAll { j =>
       j match {
@@ -51,6 +43,14 @@ case class JsonSchemaPatcher(json: JsonObject):
         ),
       ),
     )
+
+  def definitions: List[(String, Json)] =
+    json.toJson.hcursor
+      .downField(definition_path)
+      .focus
+      .flatMap(_.asObject)
+      .toList
+      .flatMap(_.toList)
 
   def _modifyAll(f: Json => Json): JsonSchemaPatcher =
     JsonSchemaPatcher(

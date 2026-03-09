@@ -5,7 +5,8 @@ import io.circe.{Json, JsonObject}
 
 import io.circe.optics.JsonOptics.*
 import io.circe.optics.JsonPath.root
-import scala.annotation.tailrec
+
+import monocle.function.Plated
 
 case class OpenApiPatcher(
     openApiSpec: JsonObject,
@@ -14,12 +15,39 @@ case class OpenApiPatcher(
   def fixDuration = OpenApiPatcher(openApiSpec, schemaPatcher.fixDuration)
 
   def mergedOpenApiSpec: JsonObject =
-    _modifyOrCreate(List("components", "schemas"))(
-      _.flatMap(_.asObject)
-        .map(o => JsonObject.fromMap(o.toMap ++ schemaPatcher.definitions))
-        .getOrElse(JsonObject.fromIterable(schemaPatcher.definitions))
-        .toJson,
+    val path = List("components", "schemas")
+    val definitions = schemaPatcher.definitions
+    _patchAllRefs(path)(
+      _modifyOrCreate(path)(
+        _.flatMap(_.asObject)
+          .map(o => JsonObject.fromMap(o.toMap ++ definitions))
+          .getOrElse(JsonObject.fromIterable(definitions))
+          .toJson,
+      ),
     )
+
+  def _patchAllRefs(path: List[String])(json: JsonObject): JsonObject =
+    val newPath = path.reduceLeft(_ + '/' + _)
+    Plated
+      .transform[Json](
+        _.withObject(o =>
+          JsonObject
+            .fromMap(
+              o.toMap
+                .map((k, v) =>
+                  k -> Some(v)
+                    .filter(_ => k == "$ref")
+                    .flatMap(_.asString)
+                    .map(s => s"#/${newPath}/${getDefinitionName(s)}")
+                    .map(Json.fromString)
+                    .getOrElse(v),
+                ),
+            )
+            .toJson,
+        ),
+      )(json.toJson)
+      .asObject
+      .get
 
   def _modifyOrCreate(path: List[String])(
       f: Option[Json] => Json,

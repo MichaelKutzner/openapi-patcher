@@ -49,7 +49,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
               content:
                 application/json:
                 schema:
-                  $ref: "./schema.json#/definitions/mobidp.common.Duration"
+                  $ref: "#/components/schemas/mobidp.common.Duration"
     components:
       schemas:
         foo:
@@ -99,6 +99,68 @@ class OpenApiPatcherSuite extends munit.FunSuite {
           pattern: "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
         mobidp.common.String:
           type: string
+    """).get
+    assertEquals(patchedSpec, expected)
+  }
+
+  test("mergedOpenApiSpec withRefsUsingIncorrectPaths updatePaths") {
+    val openApiSpec = """
+    paths:
+      /foo:
+        get:
+          responses:
+            "200":
+              content:
+                schema:
+                  $ref: "./schema.json#/definitions/mobidp.common.Duration"
+    """
+    val schema = """
+    {
+      "definitions": {
+        "mobidp.common.Duration": {
+          "type": "number"
+        },
+        "mobidp.common.String": {
+          "type": "string"
+        },
+        "foo": {
+          "properties": {
+            "duration": {"$ref": "#/definitions/mobidp.common.Duration"},
+            "text": {"$ref": "#/definitions/mobidp.common.String"}
+          }
+        },
+        "bar": {"$ref": "#/definitions/mobidp.common.String"}
+      }
+    }
+    """
+    val patchedSpec = OpenApiPatcher(
+      parseYaml(openApiSpec),
+      parseJson(schema),
+    ).mergedOpenApiSpec
+
+    val expected = parseYaml("""
+    paths:
+      /foo:
+        get:
+          responses:
+            "200":
+              content:
+                schema:
+                  $ref: "#/components/schemas/mobidp.common.Duration"
+    components:
+      schemas:
+        mobidp.common.Duration:
+          type: number
+        mobidp.common.String:
+          type: string
+        foo:
+          properties:
+            duration:
+              $ref: "#/components/schemas/mobidp.common.Duration"
+            text:
+              $ref: "#/components/schemas/mobidp.common.String"
+        bar:
+          $ref: "#/components/schemas/mobidp.common.String"
     """).get
     assertEquals(patchedSpec, expected)
   }
