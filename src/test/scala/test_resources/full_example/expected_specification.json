@@ -1,0 +1,129 @@
+{
+       "openapi": "3.0.3",
+       "info": {
+              "title": "Pseudo API",
+              "version": "v0.1",
+              "description": "Minimal example API"
+       },
+       "paths": {
+              "/foo": {
+                     "get": {
+                            "description": "Foo",
+                            "tags": [
+                                   "Foo"
+                            ],
+                            "operationId": "retrieve",
+                            "parameters": [],
+                            "responses": {
+                                   "200": {
+                                          "description": "Returns a foo",
+                                          "content": {
+                                                 "application/json": {
+                                                        "schema": {
+                                                               "$ref": "#/components/schemas/Foo"
+                                                        }
+                                                 }
+                                          }
+                                   }
+                            }
+                     },
+                     "post": {
+                            "requestBody": {
+                                   "content": {
+                                          "application/json": {
+                                                 "schema": {
+                                                        "$ref": "#/components/schemas/Foo"
+                                                 }
+                                          }
+                                   }
+                            },
+                            "responses": {
+                                   "200": {
+                                          "description": "Returns a foo",
+                                          "content": {
+                                                 "application/json": {
+                                                        "schema": {
+                                                               "$ref": "#/components/schemas/mobidp.common.Duration"
+                                                        }
+                                                 }
+                                          }
+                                   }
+                            }
+                     }
+              },
+              "/bar": {
+                     "post": {
+                            "requestBody": {
+                                   "content": {
+                                          "application/json": {
+                                                 "schema": {
+                                                        "$ref": "#/components/schemas/Bar"
+                                                 }
+                                          }
+                                   }
+                            },
+                            "responses": {
+                                   "200": {
+                                          "description": "Returns a foo",
+                                          "content": {
+                                                 "application/json": {
+                                                        "schema": {
+                                                               "$ref": "#/components/schemas/Baz"
+                                                        }
+                                                 }
+                                          }
+                                   }
+                            }
+                     }
+              }
+       },
+       "components": {
+              "schemas": {
+                     "mobidp.common.String": {
+                            "type": "string"
+                     },
+                     "mobidp.common.Duration": {
+                            "type": [
+                                   "number",
+                                   "string"
+                            ],
+                            "pattern": "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
+                     },
+                     "Foo": {
+                            "type": "object",
+                            "properties": {
+                                   "a": {
+                                          "type": "string"
+                                   },
+                                   "b": {
+                                          "type": "number"
+                                   }
+                            }
+                     },
+                     "Bar": {
+                            "type": "object",
+                            "allOf": [
+                                   {
+                                          "$ref": "#/components/schemas/Foo"
+                                   }
+                            ],
+                            "properties": {
+                                   "c": {
+                                          "$ref": "#/components/schemas/mobidp.adapters.Duration"
+                                   }
+                            }
+                     },
+                     "Baz": {
+                            "type": "array",
+                            "items": {
+                                   "type": "object",
+                                   "additionalProperties": {
+                                          "type": {
+                                                 "$ref": "#/components/schemas/mobidp.common.String"
+                                          }
+                                   }
+                            }
+                     }
+              }
+       }
+}

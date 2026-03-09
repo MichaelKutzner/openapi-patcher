@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: Pseudo API
+  version: "v0.1"
+  description: Minimal example API
+paths:
+  /foo:
+    get:
+      description: Foo
+      tags:
+        - Foo
+      operationId: retrieve
+      parameters: []
+      responses:
+        "200":
+          description: Returns a foo
+          content:
+            application/json:
+              schema:
+                $ref: './my-schema.json#/definitions/Foo'
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: './my-schema.json#/definitions/Foo'
+      responses:
+        "200":
+          description: Returns a foo
+          content:
+            application/json:
+              schema:
+                $ref: './my-schema.json#/definitions/mobidp.common.Duration'
+  /bar:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: './my-schema.json#/definitions/Bar'
+      responses:
+        "200":
+          description: Returns a foo
+          content:
+            application/json:
+              schema:
+                $ref: './my-schema.json#/definitions/Baz'
+

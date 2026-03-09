@@ -14,7 +14,11 @@
                      "type": "string"
               },
               "mobidp.common.Duration": {
-                     "type": "number"
+                     "type": [
+                            "number",
+                            "string"
+                     ],
+                     "pattern": "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
               },
               "Foo": {
                      "type": "object",
@@ -35,8 +39,6 @@
                             }
                      ],
                      "properties": {
-                            "a": {},
-                            "b": {},
                             "c": {
                                    "$ref": "#/definitions/mobidp.adapters.Duration"
                             }
@@ -46,14 +48,8 @@
                      "type": "array",
                      "items": {
                             "type": "object",
-                            "properties": {
-                                   "@type": {
-                                          "$ref": "#/definitions/mobidp.common.String"
-                                   },
-                                   "key": {
-                                          "$ref": "#/definitions/mobidp.common.String"
-                                   },
-                                   "value": {
+                            "additionalProperties": {
+                                   "type": {
                                           "$ref": "#/definitions/mobidp.common.String"
                                    }
                             }
