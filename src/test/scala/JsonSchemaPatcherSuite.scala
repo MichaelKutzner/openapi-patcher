@@ -151,4 +151,35 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
     """)
     assertEquals(fixed, expected)
   }
+
+  test("fixDuration numberDuration allowISO8601DurationStrings") {
+    val json = """
+    {
+      "definitions": {
+        "mobidp.common.Duration": {
+          "description": "Keep this",
+          "type": "number"
+        },
+        "foo": { "type": "number" }
+      }
+    }
+    """
+
+    val fixed =
+      JsonSchemaPatcher.fromString(json).map(_.fixDuration).map(_.json)
+
+    val expected = parseJson("""
+    {
+      "definitions": {
+        "mobidp.common.Duration": {
+          "description": "Keep this",
+          "type": ["number", "string"],
+          "pattern": "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
+        },
+        "foo": { "type": "number" }
+      }
+    }
+    """)
+    assertEquals(fixed, expected)
+  }
 }

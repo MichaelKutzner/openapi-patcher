@@ -12,6 +12,7 @@ import io.circe.optics.JsonPath.root
 import monocle.function.Plated
 
 case class JsonSchemaPatcher(json: JsonObject):
+
   def fixMaps: JsonSchemaPatcher =
     _modifyAll { j =>
       j match {
@@ -24,13 +25,24 @@ case class JsonSchemaPatcher(json: JsonObject):
     def isEmpty(o: Json): Boolean =
       o.asObject.map(_.isEmpty).getOrElse(false)
     JsonSchemaPatcher(
-      _forEachDefinition(o =>
+      _forEachDefinition((_, o) =>
         val derivedProperties = _derivedProperties(o)
         _forEachProperty((key, value) =>
           if isEmpty(value) && derivedProperties.contains(key) then { None }
           else { Some(value) },
         )(o),
       )(json),
+    )
+
+  def fixDuration: JsonSchemaPatcher =
+    _modifyDefinition("mobidp.common.Duration")(
+      _.+:(
+        "type" -> Json.arr(Json.fromString("number"), Json.fromString("string")),
+      ).+:(
+        "pattern" -> Json.fromString(
+          "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$",
+        ),
+      ),
     )
 
   def _modifyAll(f: Json => Json): JsonSchemaPatcher =
@@ -41,11 +53,24 @@ case class JsonSchemaPatcher(json: JsonObject):
         .get,
     )
 
-  def _forEachDefinition(f: JsonObject => JsonObject)(
+  def _modifyDefinition(definition: String)(
+      f: JsonObject => JsonObject,
+  ): JsonSchemaPatcher =
+    JsonSchemaPatcher(
+      _forEachDefinition((key, value) =>
+        key match
+          case `definition` => f(value)
+          case _            => value,
+      )(json),
+    )
+
+  def _forEachDefinition(f: (String, JsonObject) => JsonObject)(
       j: JsonObject,
   ): JsonObject =
     def modifyEachDefinition(o: JsonObject): Json =
-      o.mapValues(o => f(o.asObject.get).toJson).toJson
+      JsonObject
+        .fromMap(o.toMap.map((k, v) => (k -> f(k, v.asObject.get).toJson)))
+        .toJson
     j.toJson.hcursor
       .downField(definition_path)
       .withFocus(_.withObject(modifyEachDefinition))
