@@ -2,8 +2,7 @@ package patcher
 
 import scala.annotation.tailrec
 
-import io.circe.Json
-import io.circe.JsonObject
+import io.circe.{Json, JsonObject}
 import io.circe.parser.parse
 
 import io.circe.optics.JsonOptics.*
@@ -12,6 +11,14 @@ import io.circe.optics.JsonPath.root
 import monocle.function.Plated
 
 case class JsonSchemaPatcher(json: JsonObject):
+
+  def definitions: List[(String, Json)] =
+    json.toJson.hcursor
+      .downField(definition_path)
+      .focus
+      .flatMap(_.asObject)
+      .toList
+      .flatMap(_.toList)
 
   def fixMaps: JsonSchemaPatcher =
     _modifyAll { j =>
