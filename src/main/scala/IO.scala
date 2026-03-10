@@ -12,7 +12,7 @@ def readFile(path: String): String =
 def writeFile(path: String, content: JsonObject): Unit =
   val writer = FileWriter(path)
   try {
-    writer.write(content.toString())
+    writer.write(serialize(content))
   } finally {
     writer.close()
   }

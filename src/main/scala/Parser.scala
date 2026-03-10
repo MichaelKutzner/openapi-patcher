@@ -20,5 +20,8 @@ def parseFile(path: String): Option[JsonObject] =
         None
   ).flatMap(parser => parser(readFile(path)))
 
+def serialize(json: JsonObject): String =
+  json.toJson.toString
+
 def fileExtension(path: String): String =
   path.reverse.takeWhile(_ != '.').reverse
