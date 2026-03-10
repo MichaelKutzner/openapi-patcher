@@ -2,14 +2,14 @@ package patcher
 
 @main def patch(args: String*): Unit =
   val options = Options(
-    args.toList ::: List(
+    List(
       "-a",
       "api.yaml",
       "-j",
       "schema.json",
       "-o",
       "patched-",
-    ),
+    ) ::: args.toList,
   )
   val openapiSpec = parseFile(options.openApiSpecPath)
   val schema = parseFile(options.jsonSchemaPath)
