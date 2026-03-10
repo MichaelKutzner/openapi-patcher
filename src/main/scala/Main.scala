@@ -11,9 +11,17 @@ package patcher
       "patched-",
     ),
   )
-  val openapiSpec = parseYaml(readFile(options.openApiSpecPath)).get
-  val schema = parseJson(readFile(options.jsonSchemaPath)).get
-  val patcher = OpenApiPatcher(openapiSpec, JsonSchemaPatcher(schema))
+  val openapiSpec = parseFile(options.openApiSpecPath)
+  val schema = parseFile(options.jsonSchemaPath)
+  if openapiSpec.isEmpty then {
+    println(s"Failed to load OpenApiSpecification '${options.openApiSpecPath}'")
+    return ()
+  }
+  if schema.isEmpty then {
+    println(s"Failed to load JsonSchema '${options.jsonSchemaPath}'")
+    return ()
+  }
+  val patcher = OpenApiPatcher(openapiSpec.get, JsonSchemaPatcher(schema.get))
   val patched = patcher.fixAll
   println(options)
   writeFile(options.outputOpenApiSpecPath, patched.mergedOpenApiSpec)

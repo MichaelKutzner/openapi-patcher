@@ -9,3 +9,16 @@ def parseJson(json: String): Option[JsonObject] =
 
 def parseYaml(yaml: String): Option[JsonObject] =
   yaml_parser.parse(yaml).toOption.flatMap(_.asObject)
+
+def parseFile(path: String): Option[JsonObject] =
+  (
+    fileExtension(path) match
+      case "json" => Some(parseJson)
+      case "yaml" => Some(parseYaml)
+      case ext =>
+        println(s"Insupported file extension '${ext}'")
+        None
+  ).flatMap(parser => parser(readFile(path)))
+
+def fileExtension(path: String): String =
+  path.reverse.takeWhile(_ != '.').reverse
