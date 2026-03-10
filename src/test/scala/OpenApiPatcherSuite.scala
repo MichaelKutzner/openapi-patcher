@@ -161,8 +161,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
 
   test("integrationTest patchFullExample getExpectedSpecification") {
     def loadFile(path: String): String =
-      val basePath = "src/test/scala/"
-      scala.io.Source.fromFile(basePath + path).getLines.mkString("\n")
+      readFile("src/test/scala/" + path)
     val patcher = OpenApiPatcher(
       parseYaml(
         loadFile("./test_resources/full_example/openapi_specification.yaml"),
