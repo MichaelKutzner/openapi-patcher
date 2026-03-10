@@ -3,6 +3,7 @@ package patcher
 class OpenApiPatcherSuite extends munit.FunSuite {
   test("mergedOpenApiSpec alreadyExistingSchemas extendSchemas") {
     val openApiSpec = """
+    openapi: 3.0.3
     paths:
       /foo:
         get:
@@ -35,6 +36,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
     ).fixDuration.mergedOpenApiSpec
 
     val expected = parseYaml("""
+    openapi: 3.1.0
     paths:
       /foo:
         get:
@@ -82,6 +84,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
     ).fixDuration.mergedOpenApiSpec
 
     val expected = parseYaml("""
+    openapi: 3.1.0
     paths:
       /foo: {}
     components:
@@ -133,6 +136,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
     ).mergedOpenApiSpec
 
     val expected = parseYaml("""
+    openapi: 3.1.0
     paths:
       /foo:
         get:

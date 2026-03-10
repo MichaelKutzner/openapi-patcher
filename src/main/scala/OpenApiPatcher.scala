@@ -26,16 +26,22 @@ case class OpenApiPatcher(
   def mergedOpenApiSpec: JsonObject =
     val path = List("components", "schemas")
     val definitions = schemaPatcher.definitions
-    _patchAllRefs(path)(
-      _modifyOrCreate(path)(
-        _.flatMap(_.asObject)
-          .map(o => JsonObject.fromMap(o.toMap ++ definitions))
-          .getOrElse(JsonObject.fromIterable(definitions))
-          .toJson,
+    // TODO Improve chaining
+    _setOpenApiVersion("3.1.0")(
+      _patchAllRefs(path)(
+        _modifyOrCreate(path)(
+          _.flatMap(_.asObject)
+            .map(o => JsonObject.fromMap(o.toMap ++ definitions))
+            .getOrElse(JsonObject.fromIterable(definitions))
+            .toJson,
+        ),
       ),
     )
 
   def schema: JsonObject = schemaPatcher.json
+
+  def _setOpenApiVersion(version: String)(json: JsonObject): JsonObject =
+    json.add("openapi", Json.fromString(version))
 
   def _patchAllRefs(path: List[String])(json: JsonObject): JsonObject =
     val newPath = path.reduceLeft(_ + '/' + _)
