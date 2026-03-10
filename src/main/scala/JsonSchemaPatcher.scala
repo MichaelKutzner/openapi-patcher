@@ -44,6 +44,28 @@ case class JsonSchemaPatcher(json: JsonObject):
       ),
     )
 
+  def fillGeometry: JsonSchemaPatcher =
+    val geometries =
+      List("Point", "MultiPoint", "LineString", "Polygon", "MultiPolygon")
+    _modifyDefinition("mobidp.common.Geometry")((o: JsonObject) =>
+      def geometryOptions =
+        Some(
+          Json.arr(
+            geometries
+              .map(geometry =>
+                createRef(createDefinition(s"mobidp.common.${geometry}")),
+              )*,
+          ),
+        )
+      JsonObject.fromMap(o.toMap.updatedWith("oneOf")(_ match
+        case Some(value) =>
+          if value.asArray.map(_.isEmpty).getOrElse(true) then {
+            geometryOptions
+          } else { Some(value) }
+        case None => geometryOptions,
+      )),
+    )
+
   def definitions: List[(String, Json)] =
     json.toJson.hcursor
       .downField(definition_path)

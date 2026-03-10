@@ -182,4 +182,40 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
     """)
     assertEquals(fixed, expected)
   }
+
+  test("fillGeometry incompleteObject useCommonGeometries") {
+    val json = """
+    {
+      "definitions": {
+        "mobidp.common.Geometry": {
+          "description": "Keep this",
+          "oneOf": []
+        },
+        "foo": { "type": "number" }
+      }
+    }
+    """
+
+    val fixed =
+      JsonSchemaPatcher.fromString(json).map(_.fillGeometry).map(_.json)
+
+    val expected = parseJson("""
+    {
+      "definitions": {
+        "mobidp.common.Geometry": {
+          "description": "Keep this",
+          "oneOf": [
+            {"$ref": "#/definitions/mobidp.common.Point"},
+            {"$ref": "#/definitions/mobidp.common.MultiPoint"},
+            {"$ref": "#/definitions/mobidp.common.LineString"},
+            {"$ref": "#/definitions/mobidp.common.Polygon"},
+            {"$ref": "#/definitions/mobidp.common.MultiPolygon"}
+          ]
+        },
+        "foo": { "type": "number" }
+      }
+    }
+    """)
+    assertEquals(fixed, expected)
+  }
 }

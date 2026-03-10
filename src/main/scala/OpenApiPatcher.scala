@@ -14,7 +14,7 @@ case class OpenApiPatcher(
 ):
 
   def fixAll: OpenApiPatcher =
-    fixMaps.dropEmptyOverrides.fixDuration
+    fixMaps.dropEmptyOverrides.fixDuration.fillGeometry
 
   def fixMaps = OpenApiPatcher(openApiSpec, schemaPatcher.fixMaps)
 
@@ -22,6 +22,8 @@ case class OpenApiPatcher(
     OpenApiPatcher(openApiSpec, schemaPatcher.dropEmptyOverrides)
 
   def fixDuration = OpenApiPatcher(openApiSpec, schemaPatcher.fixDuration)
+
+  def fillGeometry = OpenApiPatcher(openApiSpec, schemaPatcher.fillGeometry)
 
   def mergedOpenApiSpec: JsonObject =
     val path = List("components", "schemas")

@@ -42,6 +42,10 @@
                             }
                      }
               },
+              "mobidp.common.Geometry": {
+                     "description": "My Geometry",
+                     "oneOf": []
+              },
               "Baz": {
                      "type": "array",
                      "items": {

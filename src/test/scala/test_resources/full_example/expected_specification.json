@@ -113,6 +113,26 @@
                                    }
                             }
                      },
+                     "mobidp.common.Geometry": {
+                            "description": "My Geometry",
+                            "oneOf": [
+                                   {
+                                          "$ref": "#/components/schemas/mobidp.common.Point"
+                                   },
+                                   {
+                                          "$ref": "#/components/schemas/mobidp.common.MultiPoint"
+                                   },
+                                   {
+                                          "$ref": "#/components/schemas/mobidp.common.LineString"
+                                   },
+                                   {
+                                          "$ref": "#/components/schemas/mobidp.common.Polygon"
+                                   },
+                                   {
+                                          "$ref": "#/components/schemas/mobidp.common.MultiPolygon"
+                                   }
+                            ]
+                     },
                      "Baz": {
                             "type": "array",
                             "items": {

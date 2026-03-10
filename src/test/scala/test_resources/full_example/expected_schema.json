@@ -20,6 +20,26 @@
                      ],
                      "pattern": "^P([0-9]+D)?T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
               },
+              "mobidp.common.Geometry": {
+                     "description": "My Geometry",
+                     "oneOf": [
+                            {
+                                   "$ref": "#/definitions/mobidp.common.Point"
+                            },
+                            {
+                                   "$ref": "#/definitions/mobidp.common.MultiPoint"
+                            },
+                            {
+                                   "$ref": "#/definitions/mobidp.common.LineString"
+                            },
+                            {
+                                   "$ref": "#/definitions/mobidp.common.Polygon"
+                            },
+                            {
+                                   "$ref": "#/definitions/mobidp.common.MultiPolygon"
+                            }
+                     ]
+              },
               "Foo": {
                      "type": "object",
                      "properties": {
