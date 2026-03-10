@@ -174,7 +174,7 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
         "mobidp.common.Duration": {
           "description": "Keep this",
           "type": ["number", "string"],
-          "pattern": "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
+          "pattern": "^P([0-9]+D)?T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
         },
         "foo": { "type": "number" }
       }

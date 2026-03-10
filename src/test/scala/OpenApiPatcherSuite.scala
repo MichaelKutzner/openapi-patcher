@@ -52,7 +52,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
           type:
             - number
             - string
-          pattern: "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
+          pattern: "^P([0-9]+D)?T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
         mobidp.common.String:
           type: string
     """).get
@@ -90,7 +90,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
           type:
             - number
             - string
-          pattern: "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
+          pattern: "^P([0-9]+D)?T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
         mobidp.common.String:
           type: string
     """).get

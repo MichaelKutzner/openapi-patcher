@@ -39,7 +39,7 @@ case class JsonSchemaPatcher(json: JsonObject):
         "type" -> Json.arr(Json.fromString("number"), Json.fromString("string")),
       ).+:(
         "pattern" -> Json.fromString(
-          "^P([0-9]+D)?([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$",
+          "^P([0-9]+D)?T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$",
         ),
       ),
     )
