@@ -171,12 +171,10 @@ case class FixedMap(type_ref: String):
   def json: Json =
     JsonObject(
       ("type", Json.fromString("object")),
-      ("additionalProperties" -> JsonObject(
-        (
-          "type",
+      (
+        "additionalProperties" ->
           JsonObject(("$ref", Json.fromString(type_ref))).toJson,
-        ),
-      ).toJson),
+      ),
     ).toJson
 
 def createRef(ref: String): Json = JsonObject(

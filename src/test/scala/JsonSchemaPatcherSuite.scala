@@ -36,7 +36,7 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
         "broken": {
           "type": "object",
           "additionalProperties": {
-            "type": { "$$ref": "#/definitions/mobidp.common.${`type`}" }
+            "$$ref": "#/definitions/mobidp.common.${`type`}"
           }
         }
       }

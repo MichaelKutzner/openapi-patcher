@@ -118,9 +118,7 @@
                             "items": {
                                    "type": "object",
                                    "additionalProperties": {
-                                          "type": {
-                                                 "$ref": "#/components/schemas/mobidp.common.String"
-                                          }
+                                          "$ref": "#/components/schemas/mobidp.common.String"
                                    }
                             }
                      }

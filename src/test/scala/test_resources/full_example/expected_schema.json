@@ -49,9 +49,7 @@
                      "items": {
                             "type": "object",
                             "additionalProperties": {
-                                   "type": {
-                                          "$ref": "#/definitions/mobidp.common.String"
-                                   }
+                                   "$ref": "#/definitions/mobidp.common.String"
                             }
                      }
               }
