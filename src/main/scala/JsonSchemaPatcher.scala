@@ -144,30 +144,29 @@ case class JsonSchemaPatcher(json: JsonObject):
       .getOrElse(j)
 
   def _derivedProperties(o: JsonObject): List[String] =
-    def getParents(o: Json): List[String] =
-      root.allOf.each.`$ref`.as[String]
-        .getAll(o)
-        .map(getDefinitionName)
-    def getProperties(definition: String) =
-      _getDefinition(definition).asObject
-        .flatMap(
-          _("properties").flatMap(_.asObject),
-        )
-        .toList
-        .flatMap(_.keys)
+    _getDerivedParents(o).flatMap(_getProperties)
+
+  def _getDerivedParents(o: JsonObject): List[String] =
     @tailrec
-    def collectProperties(
-        definitions: List[String],
-        properties: List[String],
-    ): List[String] =
-      definitions match
-        case x :: xs =>
-          collectProperties(
-            getParents(_getDefinition(x)) ::: xs,
-            getProperties(x) ::: properties,
-          )
-        case Nil => properties
-    collectProperties(getParents(o.toJson), List())
+    def helper(candidates: List[Json], allParents: List[String]): List[String] =
+      candidates match
+        case head :: next =>
+          val parentNames =
+            root.allOf.each.`$ref`.as[String]
+              .getAll(head)
+              .map(getDefinitionName)
+          val parentDefinitions = parentNames.map(_getDefinition)
+          helper(parentDefinitions ::: next, parentNames ::: allParents)
+        case scala.collection.immutable.Nil => allParents
+    helper(List(o.toJson), List())
+
+  def _getProperties(definition: String): List[String] =
+    _getDefinition(definition).asObject
+      .flatMap(
+        _("properties").flatMap(_.asObject),
+      )
+      .toList
+      .flatMap(_.keys)
 
   def _getDefinition(definition: String): Json =
     json.toJson.hcursor
