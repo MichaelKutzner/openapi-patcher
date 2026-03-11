@@ -218,4 +218,48 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
     """)
     assertEquals(fixed, expected)
   }
+
+  test("dropRedundantNumberRef someObjectsWithRedundantRef dropRedundantOnly") {
+    val json = """
+    {
+      "definitions": {
+        "mobidp.common.Decimal": {
+          "type": "number"
+        },
+        "ok": { "type": "number" },
+        "also_ok": {
+          "allOf": [ { "$ref": "#/definitions/mobidp.common.Decimal" }]
+        },
+        "redundant": {
+          "allOf": [ { "$ref": "#/definitions/mobidp.common.Decimal" }],
+          "type": "number"
+        }
+      }
+    }
+    """
+
+    val fixed =
+      JsonSchemaPatcher
+        .fromString(json)
+        .map(_.dropRedundantNumberRef)
+        .map(_.json)
+
+    val expected = parseJson("""
+    {
+      "definitions": {
+        "mobidp.common.Decimal": {
+          "type": "number"
+        },
+        "ok": { "type": "number" },
+        "also_ok": {
+          "allOf": [ { "$ref": "#/definitions/mobidp.common.Decimal" }]
+        },
+        "redundant": {
+          "type": "number"
+        }
+      }
+    }
+    """)
+    assertEquals(fixed, expected)
+  }
 }

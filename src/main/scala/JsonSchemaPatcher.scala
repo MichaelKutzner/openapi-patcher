@@ -66,6 +66,24 @@ case class JsonSchemaPatcher(json: JsonObject):
       )),
     )
 
+  def dropRedundantNumberRef: JsonSchemaPatcher =
+    /** Using a double specified number type with objects using 'oneOf' can
+      * currently result in an unexpected class being generated. This might be a
+      * bug of the generator.
+      */
+    def isNumber(o: JsonObject) =
+      o("type").flatMap(_.asString).map(_ == "number").getOrElse(false)
+    def isNumberRef(o: JsonObject) =
+      val numberRef =
+        Json.arr(createRef(createDefinition("mobidp.common.Decimal")))
+      o("allOf").map(_ == numberRef).getOrElse(false)
+    JsonSchemaPatcher(
+      _forEachDefinition((key, value) =>
+        if isNumber(value) && isNumberRef(value) then { value.remove("allOf") }
+        else { value },
+      ),
+    )
+
   def definitions: List[(String, Json)] =
     json.toJson.hcursor
       .downField(definition_path)

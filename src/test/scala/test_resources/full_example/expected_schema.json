@@ -72,6 +72,26 @@
                                    "$ref": "#/definitions/mobidp.common.String"
                             }
                      }
+              },
+              "mobidp.common.Decimal": {
+                     "description": "Decimal number",
+                     "type": "number"
+              },
+              "number-foo": {
+                     "title": "Foo",
+                     "type": "number"
+              },
+              "number-bar": {
+                     "title": "Bar",
+                     "type": "number"
+              },
+              "number-baz": {
+                     "title": "Baz",
+                     "allOf": [
+                            {
+                                   "$ref": "#/definitions/mobidp.common.Decimal"
+                            }
+                     ]
               }
        }
 }
