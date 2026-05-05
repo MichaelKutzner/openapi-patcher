@@ -84,6 +84,56 @@ case class JsonSchemaPatcher(json: JsonObject):
       ),
     )
 
+  def fixValueObject: JsonSchemaPatcher =
+    // 1. Find all objects that use 'allOf: ValueObject'
+    // 2. Drop 'allOf'
+    // 3. Update 'ValueObject'
+    // val refs2 = json
+    //   .apply("anyOf")
+    //   // .tapEach(println)
+    //   .flatMap(_.asArray)
+    //   // .tapEach(println)
+    //   .toSeq
+    //   .flatMap(_.toSeq)
+    //   .flatMap(_.asObject)
+    //   .flatMap(_.apply("$ref").flatMap(_.asString).map(getDefinitionName))
+    // println(s"refs2: ${refs2}")
+    val refs = _mapEachDefinition((definitionName, definition) =>
+      if _getDerivedParents(definition).contains(value_object_name) then {
+        Some(definitionName)
+      } else { None },
+    )
+    println(s"refs (${refs.length}): ${refs}")
+    val withKStoreSchema = json.toJson.hcursor
+      .downField(definition_path)
+      .withFocus(
+        _.withObject(obj =>
+          obj
+            .+:(
+              kstore_value_name -> Json.obj(
+                "oneOf" -> Json.arr(refs.map(createRef)*),
+                // "oneOf" -> Json.fromValues(refs2.map(createRef)),
+                "discriminator" -> Json.obj(
+                  "type" -> Json.fromString("object"),
+                  "propertyName" -> Json.fromString("@type"),
+                  "mapping" -> Json.obj(
+                    refs
+                      .map(ref =>
+                        ref + "$Bean" -> Json.fromString(createDefinition(ref)),
+                      )
+                      .toSeq*,
+                  ),
+                ),
+              ),
+            )
+            .toJson,
+        ),
+      )
+      .top
+      .flatMap(_.asObject)
+      .get
+    JsonSchemaPatcher(withKStoreSchema)
+
   def definitions: List[(String, Json)] =
     json.toJson.hcursor
       .downField(definition_path)
@@ -122,6 +172,18 @@ case class JsonSchemaPatcher(json: JsonObject):
       .top
       .flatMap(_.asObject)
       .get
+
+  def _mapEachDefinition[A](f: (String, JsonObject) => Option[A]): Seq[A] =
+    json.toJson.hcursor
+      .downField(definition_path)
+      .focus
+      .flatMap(_.asObject)
+      .toSeq
+      .flatMap(
+        _.toMap
+          .flatMap((key, value) => value.asObject.flatMap(o => f(key, o)))
+          .toSeq,
+      )
 
   def _forEachProperty(f: ((String, Json)) => Option[Json])(
       j: JsonObject,
@@ -227,6 +289,8 @@ def createDefinition(definition: String): String =
   s"#/${definition_path}/${definition}"
 
 val definition_path = "definitions"
+val value_object_name = "mobidp.persistence.ValueObject"
+val kstore_value_name = "KStoreValue"
 
 // extension (json: Json) def toPatcher = json.asObject.get
 // extension (json: Option[Json]) def toPatcher = json.flatMap(_.asObject).get

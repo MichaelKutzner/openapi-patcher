@@ -14,7 +14,22 @@ case class OpenApiPatcher(
 ):
 
   def fixAll: OpenApiPatcher =
-    fixMaps.dropEmptyOverrides.fixDuration.fillGeometry.dropRedundantNumberRef
+    dropProblematicEndpoints.fixMaps.dropEmptyOverrides.fixDuration.fillGeometry.dropRedundantNumberRef.fixValueObject
+
+  def dropProblematicEndpoints =
+    val newOpenApiSpec =
+      root.paths.obj
+        .modify(o =>
+          o.filterKeys(key =>
+            !List("/backup", "/restore", "/store/{table}/{identifier}")
+              .contains(key),
+          ),
+        )(
+          openApiSpec.toJson,
+        )
+        .asObject
+        .get
+    OpenApiPatcher(newOpenApiSpec, schemaPatcher)
 
   def fixMaps = OpenApiPatcher(openApiSpec, schemaPatcher.fixMaps)
 
@@ -27,6 +42,38 @@ case class OpenApiPatcher(
 
   def dropRedundantNumberRef =
     OpenApiPatcher(openApiSpec, schemaPatcher.dropRedundantNumberRef)
+
+  def fixValueObject =
+    val suffix = "/" + value_object_name
+    val patchedSpec = Plated
+      .transform[Json](
+        _.withObject(o =>
+          Json.obj(
+            o.toMap
+              .map((key, value) =>
+                key -> Some(value)
+                  .filter(_ => key == "$ref")
+                  .filter(_ =>
+                    value.asString
+                      .map(_.endsWith(suffix))
+                      .getOrElse(false),
+                  )
+                  .map(
+                    _.withString(s =>
+                      Json.fromString(
+                        s.dropRight(suffix.length) + "/" + kstore_value_name,
+                      ),
+                    ),
+                  )
+                  .getOrElse(value),
+              )
+              .toSeq*,
+          ),
+        ),
+      )(openApiSpec.toJson)
+      .asObject
+      .get
+    OpenApiPatcher(patchedSpec, schemaPatcher.fixValueObject)
 
   def mergedOpenApiSpec: JsonObject =
     val path = List("components", "schemas")
