@@ -11,10 +11,11 @@ import monocle.function.Plated
 case class OpenApiPatcher(
     openApiSpec: JsonObject,
     schemaPatcher: JsonSchemaPatcher,
+    schemaWithFixedDuration: Boolean = false,
 ):
 
   def fixAll: OpenApiPatcher =
-    dropProblematicEndpoints.fixMaps.dropEmptyOverrides.fixDuration.fillGeometry.dropRedundantNumberRef.fixValueObject
+    dropProblematicEndpoints.fixBrokenDefinitions.fixMaps.dropEmptyOverrides.fixDuration.fillGeometry.dropRedundantNumberRef.updateValueObject
 
   def dropProblematicEndpoints =
     val newOpenApiSpec =
@@ -31,19 +32,24 @@ case class OpenApiPatcher(
         .get
     OpenApiPatcher(newOpenApiSpec, schemaPatcher)
 
+  def fixBrokenDefinitions =
+    // this.copy(schemaWithFixedDuration = true)
+    OpenApiPatcher(openApiSpec, schemaPatcher.fixBrokenDefinitions)
+
   def fixMaps = OpenApiPatcher(openApiSpec, schemaPatcher.fixMaps)
 
   def dropEmptyOverrides =
     OpenApiPatcher(openApiSpec, schemaPatcher.dropEmptyOverrides)
 
-  def fixDuration = OpenApiPatcher(openApiSpec, schemaPatcher.fixDuration)
+  def fixDuration =
+    this.copy(schemaWithFixedDuration = true)
 
   def fillGeometry = OpenApiPatcher(openApiSpec, schemaPatcher.fillGeometry)
 
   def dropRedundantNumberRef =
     OpenApiPatcher(openApiSpec, schemaPatcher.dropRedundantNumberRef)
 
-  def fixValueObject =
+  def updateValueObject =
     val suffix = "/" + value_object_name
     val patchedSpec = Plated
       .transform[Json](
@@ -73,7 +79,7 @@ case class OpenApiPatcher(
       )(openApiSpec.toJson)
       .asObject
       .get
-    OpenApiPatcher(patchedSpec, schemaPatcher.fixValueObject)
+    OpenApiPatcher(patchedSpec, schemaPatcher.createKStoreValueObject)
 
   def mergedOpenApiSpec: JsonObject =
     val path = List("components", "schemas")
@@ -90,7 +96,11 @@ case class OpenApiPatcher(
       ),
     )
 
-  def schema: JsonObject = schemaPatcher.json
+  def schema: JsonObject = _applySchemaFixes(schemaPatcher).json
+
+  def _applySchemaFixes(patcher: JsonSchemaPatcher): JsonSchemaPatcher =
+    if schemaWithFixedDuration then { patcher.fixDuration }
+    else { patcher }
 
   def _setOpenApiVersion(version: String)(json: JsonObject): JsonObject =
     json.add("openapi", Json.fromString(version))

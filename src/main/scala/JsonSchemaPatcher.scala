@@ -12,6 +12,20 @@ import monocle.function.Plated
 
 case class JsonSchemaPatcher(json: JsonObject):
 
+  def fixBrokenDefinitions: JsonSchemaPatcher =
+    _modifyDefinition("mobidp.portal.Subscriber")(
+      _.+:(
+        "properties" -> Json.obj(
+          "TODO" -> Json.obj(
+            "description" -> Json.fromString(
+              "TODO Placeholder propertery to compile",
+            ),
+            "type" -> Json.fromString("string"),
+          ),
+        ),
+      ),
+    )
+
   def fixMaps: JsonSchemaPatcher =
     _modifyAll { j =>
       j match {
@@ -84,26 +98,12 @@ case class JsonSchemaPatcher(json: JsonObject):
       ),
     )
 
-  def fixValueObject: JsonSchemaPatcher =
-    // 1. Find all objects that use 'allOf: ValueObject'
-    // 2. Drop 'allOf'
-    // 3. Update 'ValueObject'
-    // val refs2 = json
-    //   .apply("anyOf")
-    //   // .tapEach(println)
-    //   .flatMap(_.asArray)
-    //   // .tapEach(println)
-    //   .toSeq
-    //   .flatMap(_.toSeq)
-    //   .flatMap(_.asObject)
-    //   .flatMap(_.apply("$ref").flatMap(_.asString).map(getDefinitionName))
-    // println(s"refs2: ${refs2}")
+  def createKStoreValueObject: JsonSchemaPatcher =
     val refs = _mapEachDefinition((definitionName, definition) =>
       if _getDerivedParents(definition).contains(value_object_name) then {
         Some(definitionName)
       } else { None },
     )
-    println(s"refs (${refs.length}): ${refs}")
     val withKStoreSchema = json.toJson.hcursor
       .downField(definition_path)
       .withFocus(
@@ -112,7 +112,6 @@ case class JsonSchemaPatcher(json: JsonObject):
             .+:(
               kstore_value_name -> Json.obj(
                 "oneOf" -> Json.arr(refs.map(createRef)*),
-                // "oneOf" -> Json.fromValues(refs2.map(createRef)),
                 "discriminator" -> Json.obj(
                   "type" -> Json.fromString("object"),
                   "propertyName" -> Json.fromString("@type"),
@@ -291,6 +290,3 @@ def createDefinition(definition: String): String =
 val definition_path = "definitions"
 val value_object_name = "mobidp.persistence.ValueObject"
 val kstore_value_name = "KStoreValue"
-
-// extension (json: Json) def toPatcher = json.asObject.get
-// extension (json: Option[Json]) def toPatcher = json.flatMap(_.asObject).get
