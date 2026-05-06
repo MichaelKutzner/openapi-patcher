@@ -61,23 +61,75 @@ case class JsonSchemaPatcher(json: JsonObject):
   def fillGeometry: JsonSchemaPatcher =
     val geometries =
       List("Point", "MultiPoint", "LineString", "Polygon", "MultiPolygon")
-    _modifyDefinition("mobidp.common.Geometry")((o: JsonObject) =>
-      def geometryOptions =
-        Some(
-          Json.arr(
-            geometries
-              .map(geometry =>
-                createRef(createDefinition(s"mobidp.common.${geometry}")),
-              )*,
-          ),
-        )
-      JsonObject.fromMap(o.toMap.updatedWith("oneOf")(_ match
-        case Some(value) =>
-          if value.asArray.map(_.isEmpty).getOrElse(true) then {
-            geometryOptions
-          } else { Some(value) }
-        case None => geometryOptions,
-      )),
+    val geometriesMap =
+      geometries.map(geometry => s"mobidp.common.${geometry}" -> geometry).toMap
+    // Add discriminator to Geometry
+    val schemaWithGeometryDiscrimitator =
+      _modifyDefinition("mobidp.common.Geometry")((o: JsonObject) =>
+        def geometryOptions =
+          Some(
+            Json.arr(
+              geometriesMap
+                .map((definition, geometry) =>
+                  createRef(createDefinition(definition)),
+                )
+                .toSeq*,
+            ),
+          )
+        JsonObject.fromMap(
+          o.toMap
+            .updatedWith("oneOf")(_ match
+              case Some(value) =>
+                if value.asArray.map(_.isEmpty).getOrElse(true) then {
+                  geometryOptions
+                } else { Some(value) }
+              case None => geometryOptions,
+            )
+            .+(
+              "discriminator" -> Json.obj(
+                "propertyName" -> Json.fromString("type"),
+                "mapping" -> Json.obj(
+                  geometriesMap
+                    .map((definition, `type`) =>
+                      `type` -> Json.fromString(createDefinition(definition)),
+                    )
+                    .toSeq*,
+                ),
+              ),
+            ),
+        ),
+      )
+    // Update each geometry
+    JsonSchemaPatcher(
+      schemaWithGeometryDiscrimitator._forEachDefinition(
+        // Add 'type' property with default for each geometry
+        (ref, definition) =>
+          if geometriesMap.isDefinedAt(ref) then {
+            definition
+              // Override property 'type' and set default
+              .+:(
+                "properties" -> definition
+                  .apply("properties")
+                  .flatMap(_.asObject)
+                  .orElse(Some(JsonObject()))
+                  .map(_.+:("type" -> createEnum(geometriesMap(ref))))
+                  .get
+                  .toJson,
+              )
+              // Remove 'type' from required properties
+              .+:(
+                "required" -> definition
+                  .apply("required")
+                  .orElse(Some(Json.arr()))
+                  .map(
+                    _.withArray(reqs =>
+                      Json.arr(reqs.filterNot(_ == Json.fromString("type"))*),
+                    ),
+                  )
+                  .get,
+              )
+          } else { definition },
+      ),
     )
 
   def dropRedundantNumberRef: JsonSchemaPatcher =
@@ -114,7 +166,6 @@ case class JsonSchemaPatcher(json: JsonObject):
               kstore_value_name -> Json.obj(
                 "oneOf" -> Json.arr(refs.map(createRef)*),
                 "discriminator" -> Json.obj(
-                  "type" -> Json.fromString("object"),
                   "propertyName" -> Json.fromString("@type"),
                   "mapping" -> Json.obj(
                     refs
@@ -147,21 +198,6 @@ case class JsonSchemaPatcher(json: JsonObject):
                   .get
                   .toJson,
               )
-            // // Make '@type' required
-            // .+:(
-            //   "required" -> definition
-            //     .apply("required")
-            //     // .flatMap(_.asArray)
-            //     // .orElse(Json.arr().asArray)
-            //     .orElse(Some(Json.arr()))
-            //     .map(
-            //       _.withArray(s =>
-            //         Json.arr(s.appended(Json.fromString("@type"))*),
-            //       ),
-            //     )
-            //     // .map(_.appended(Json.fromString("@type"))),
-            //     .get,
-            // )
           } else { definition },
       ),
     )
