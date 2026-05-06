@@ -104,6 +104,7 @@ case class JsonSchemaPatcher(json: JsonObject):
         Some(definitionName)
       } else { None },
     )
+    // Create object with discriminator '@type' and explicit mapping
     val withKStoreSchema = json.toJson.hcursor
       .downField(definition_path)
       .withFocus(
@@ -131,7 +132,39 @@ case class JsonSchemaPatcher(json: JsonObject):
       .top
       .flatMap(_.asObject)
       .get
-    JsonSchemaPatcher(withKStoreSchema)
+    JsonSchemaPatcher(
+      JsonSchemaPatcher(withKStoreSchema)._forEachDefinition(
+        // Add '@type' property with default for each allowed discriminator object
+        (ref, definition) =>
+          if refs.contains(ref) then {
+            definition
+              .+:(
+                "properties" -> definition
+                  .apply("properties")
+                  .flatMap(_.asObject)
+                  .orElse(Some(JsonObject()))
+                  .map(_.+:("@type" -> createEnum(ref + "$Bean")))
+                  .get
+                  .toJson,
+              )
+            // // Make '@type' required
+            // .+:(
+            //   "required" -> definition
+            //     .apply("required")
+            //     // .flatMap(_.asArray)
+            //     // .orElse(Json.arr().asArray)
+            //     .orElse(Some(Json.arr()))
+            //     .map(
+            //       _.withArray(s =>
+            //         Json.arr(s.appended(Json.fromString("@type"))*),
+            //       ),
+            //     )
+            //     // .map(_.appended(Json.fromString("@type"))),
+            //     .get,
+            // )
+          } else { definition },
+      ),
+    )
 
   def definitions: List[(String, Json)] =
     json.toJson.hcursor
@@ -286,6 +319,13 @@ def getDefinitionName(s: String): String =
 
 def createDefinition(definition: String): String =
   s"#/${definition_path}/${definition}"
+
+def createEnum(definition: String): Json =
+  val disc = Json.fromString(definition)
+  Json.obj(
+    "enum" -> Json.arr(disc),
+    "default" -> disc,
+  )
 
 val definition_path = "definitions"
 val value_object_name = "mobidp.persistence.ValueObject"
