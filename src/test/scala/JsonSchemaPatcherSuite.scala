@@ -208,9 +208,21 @@ class JsonSchemaPatcherSuite extends munit.FunSuite {
             {"$ref": "#/definitions/mobidp.common.Point"},
             {"$ref": "#/definitions/mobidp.common.MultiPoint"},
             {"$ref": "#/definitions/mobidp.common.LineString"},
+            {"$ref": "#/definitions/mobidp.common.MultiLineString"},
             {"$ref": "#/definitions/mobidp.common.Polygon"},
             {"$ref": "#/definitions/mobidp.common.MultiPolygon"}
-          ]
+          ],
+          "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "Point": "#/definitions/mobidp.common.Point",
+              "MultiPoint": "#/definitions/mobidp.common.MultiPoint",
+              "LineString": "#/definitions/mobidp.common.LineString",
+              "MultiLineString": "#/definitions/mobidp.common.MultiLineString",
+              "Polygon": "#/definitions/mobidp.common.Polygon",
+              "MultiPolygon": "#/definitions/mobidp.common.MultiPolygon"
+            }
+          }
         },
         "foo": { "type": "number" }
       }

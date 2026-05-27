@@ -60,16 +60,23 @@ case class JsonSchemaPatcher(json: JsonObject):
 
   def fillGeometry: JsonSchemaPatcher =
     val geometries =
-      List("Point", "MultiPoint", "LineString", "Polygon", "MultiPolygon")
-    val geometriesMap =
-      geometries.map(geometry => s"mobidp.common.${geometry}" -> geometry).toMap
+      List(
+        "Point",
+        "MultiPoint",
+        "LineString",
+        "MultiLineString",
+        "Polygon",
+        "MultiPolygon",
+      )
+    val geometriesMapping =
+      geometries.map(geometry => s"mobidp.common.${geometry}" -> geometry)
     // Add discriminator to Geometry
     val schemaWithGeometryDiscrimitator =
       _modifyDefinition("mobidp.common.Geometry")((o: JsonObject) =>
         def geometryOptions =
           Some(
             Json.arr(
-              geometriesMap
+              geometriesMapping
                 .map((definition, geometry) =>
                   createRef(createDefinition(definition)),
                 )
@@ -89,7 +96,7 @@ case class JsonSchemaPatcher(json: JsonObject):
               "discriminator" -> Json.obj(
                 "propertyName" -> Json.fromString("type"),
                 "mapping" -> Json.obj(
-                  geometriesMap
+                  geometriesMapping
                     .map((definition, `type`) =>
                       `type` -> Json.fromString(createDefinition(definition)),
                     )
@@ -100,6 +107,7 @@ case class JsonSchemaPatcher(json: JsonObject):
         ),
       )
     // Update each geometry
+    val geometriesMap = geometriesMapping.toMap
     JsonSchemaPatcher(
       schemaWithGeometryDiscrimitator._forEachDefinition(
         // Add 'type' property with default for each geometry

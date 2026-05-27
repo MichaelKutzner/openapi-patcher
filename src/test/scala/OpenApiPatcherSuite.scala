@@ -51,10 +51,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
         foo:
           type: number
         mobidp.common.Duration:
-          type:
-            - number
-            - string
-          pattern: "^P([0-9]+D)?T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
+          type: number
         mobidp.common.String:
           type: string
     """).get
@@ -90,10 +87,7 @@ class OpenApiPatcherSuite extends munit.FunSuite {
     components:
       schemas:
         mobidp.common.Duration:
-          type:
-            - number
-            - string
-          pattern: "^P([0-9]+D)?T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?$"
+          type: number
         mobidp.common.String:
           type: string
     """).get
@@ -182,7 +176,17 @@ class OpenApiPatcherSuite extends munit.FunSuite {
       parseJson(
         loadFile("./test_resources/full_example/expected_schema.json"),
       ).get
-    assertEquals(fixed.mergedOpenApiSpec, expectedSpecification)
-    assertEquals(fixed.schema, expectedSchema)
+    assertEquals(fixed.mergedOpenApiSpec.sorted, expectedSpecification.sorted)
+    assertEquals(fixed.schema.sorted, expectedSchema.sorted)
   }
 }
+
+extension (json: io.circe.JsonObject)
+  def sorted: io.circe.Json =
+    import io.circe.Json
+    import io.circe.optics.JsonOptics.jsonPlated
+    import monocle.function.Plated
+
+    Plated.transform[Json](
+      _.withObject(o => Json.obj(o.toMap.toSeq*)),
+    )(json.toJson)

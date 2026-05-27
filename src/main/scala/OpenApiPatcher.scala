@@ -30,24 +30,23 @@ case class OpenApiPatcher(
         )
         .asObject
         .get
-    OpenApiPatcher(newOpenApiSpec, schemaPatcher)
+    copy(openApiSpec = newOpenApiSpec)
 
   def fixBrokenDefinitions =
-    // this.copy(schemaWithFixedDuration = true)
-    OpenApiPatcher(openApiSpec, schemaPatcher.fixBrokenDefinitions)
+    copy(schemaPatcher = schemaPatcher.fixBrokenDefinitions)
 
-  def fixMaps = OpenApiPatcher(openApiSpec, schemaPatcher.fixMaps)
+  def fixMaps = copy(schemaPatcher = schemaPatcher.fixMaps)
 
   def dropEmptyOverrides =
-    OpenApiPatcher(openApiSpec, schemaPatcher.dropEmptyOverrides)
+    copy(schemaPatcher = schemaPatcher.dropEmptyOverrides)
 
   def fixDuration =
     this.copy(schemaWithFixedDuration = true)
 
-  def fillGeometry = OpenApiPatcher(openApiSpec, schemaPatcher.fillGeometry)
+  def fillGeometry = copy(schemaPatcher = schemaPatcher.fillGeometry)
 
   def dropRedundantNumberRef =
-    OpenApiPatcher(openApiSpec, schemaPatcher.dropRedundantNumberRef)
+    copy(schemaPatcher = schemaPatcher.dropRedundantNumberRef)
 
   def updateValueObject =
     val suffix = "/" + value_object_name
@@ -79,7 +78,7 @@ case class OpenApiPatcher(
       )(openApiSpec.toJson)
       .asObject
       .get
-    OpenApiPatcher(patchedSpec, schemaPatcher.createKStoreValueObject)
+    copy(schemaPatcher = schemaPatcher.createKStoreValueObject)
 
   def mergedOpenApiSpec: JsonObject =
     val path = List("components", "schemas")
