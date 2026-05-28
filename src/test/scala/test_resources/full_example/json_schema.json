@@ -87,6 +87,43 @@
                                    "$ref": "#/definitions/mobidp.common.Decimal"
                             }
                      ]
+              },
+              "mobidp.persistence.ValueObject": {
+                     "type": "object"
+              },
+              "BaseA": {
+                     "type": "object",
+                     "allOf": [
+                            {
+                                   "$ref": "#/definitions/mobidp.persistence.ValueObject"
+                            }
+                     ],
+                     "properties": {
+                            "name": {
+                                   "type": "string"
+                            }
+                     }
+              },
+              "DerivedA1": {
+                     "type": "object",
+                     "allOf": [
+                            {
+                                   "$ref": "#/definitions/BaseA"
+                            }
+                     ],
+                     "properties": {
+                            "value": {
+                                   "type": "string"
+                            }
+                     }
+              },
+              "DerivedA2": {
+                     "type": "object",
+                     "allOf": [
+                            {
+                                   "$ref": "#/definitions/BaseA"
+                            }
+                     ]
               }
        }
 }

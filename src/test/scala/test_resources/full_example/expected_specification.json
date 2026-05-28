@@ -86,10 +86,24 @@
                             "type": "number"
                      },
                      "KStoreValue": {
-                            "oneOf": [],
+                            "oneOf": [
+                                   {
+                                          "$ref": "#/components/schemas/BaseA"
+                                   },
+                                   {
+                                          "$ref": "#/components/schemas/DerivedA1"
+                                   },
+                                   {
+                                          "$ref": "#/components/schemas/DerivedA2"
+                                   }
+                            ],
                             "discriminator": {
                                    "propertyName": "@type",
-                                   "mapping": {}
+                                   "mapping": {
+                                          "BaseA$Bean": "#/components/schemas/BaseA",
+                                          "DerivedA1$Bean": "#/components/schemas/DerivedA1",
+                                          "DerivedA2$Bean": "#/components/schemas/DerivedA2"
+                                   }
                             }
                      },
                      "Foo": {
@@ -178,6 +192,65 @@
                                           "$ref": "#/components/schemas/mobidp.common.Decimal"
                                    }
                             ]
+                     },
+                     "mobidp.persistence.ValueObject": {
+                            "type": "object"
+                     },
+                     "BaseA": {
+                            "type": "object",
+                            "allOf": [
+                                   {
+                                          "$ref": "#/components/schemas/mobidp.persistence.ValueObject"
+                                   }
+                            ],
+                            "properties": {
+                                   "@type": {
+                                          "enum": [
+                                                 "BaseA$Bean",
+                                                 "DerivedA1$Bean",
+                                                 "DerivedA2$Bean"
+                                          ],
+                                          "default": "BaseA$Bean"
+                                   },
+                                   "name": {
+                                          "type": "string"
+                                   }
+                            }
+                     },
+                     "DerivedA1": {
+                            "type": "object",
+                            "allOf": [
+                                   {
+                                          "$ref": "#/components/schemas/BaseA"
+                                   }
+                            ],
+                            "properties": {
+                                   "@type": {
+                                          "enum": [
+                                                 "DerivedA1$Bean"
+                                          ],
+                                          "default": "DerivedA1$Bean"
+                                   },
+                                   "value": {
+                                          "type": "string"
+                                   }
+                            }
+                     },
+                     "DerivedA2": {
+                            "type": "object",
+                            "allOf": [
+                                   {
+                                          "$ref": "#/components/schemas/BaseA"
+                                   }
+                            ],
+                            "properties": {
+                                   "@type": {
+                                          "enum": [
+                                                 "DerivedA2$Bean"
+                                          ],
+                                          "default": "DerivedA2$Bean"
+                                   }
+                            }
                      }
               }
        }

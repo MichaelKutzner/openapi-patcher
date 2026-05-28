@@ -159,11 +159,8 @@ case class JsonSchemaPatcher(json: JsonObject):
     )
 
   def createKStoreValueObject: JsonSchemaPatcher =
-    val refs = _mapEachDefinition((definitionName, definition) =>
-      if _getDerivedParents(definition).contains(value_object_name) then {
-        Some(definitionName)
-      } else { None },
-    )
+    val refs = _getDerived(value_object_name)
+    def addBean(s: String) = s + "$Bean"
     // Create object with discriminator '@type' and explicit mapping
     val withKStoreSchema = json.toJson.hcursor
       .downField(definition_path)
@@ -172,7 +169,7 @@ case class JsonSchemaPatcher(json: JsonObject):
           obj
             .+:(
               kstore_value_name -> Json.obj(
-                "oneOf" -> Json.arr(refs.map(createRef)*),
+                "oneOf" -> Json.arr(refs.map(createObjectRef)*),
                 "discriminator" -> Json.obj(
                   "propertyName" -> Json.fromString("@type"),
                   "mapping" -> Json.obj(
@@ -202,7 +199,14 @@ case class JsonSchemaPatcher(json: JsonObject):
                   .apply("properties")
                   .flatMap(_.asObject)
                   .orElse(Some(JsonObject()))
-                  .map(_.+:("@type" -> createEnum(ref + "$Bean")))
+                  .map(
+                    _.+:(
+                      "@type" -> createEnum(
+                        addBean(ref),
+                        _getDerived(ref).map(addBean),
+                      ),
+                    ),
+                  )
                   .get
                   .toJson,
               )
@@ -298,6 +302,14 @@ case class JsonSchemaPatcher(json: JsonObject):
         case scala.collection.immutable.Nil => allParents
     helper(List(o.toJson), List())
 
+  def _getDerived(objectName: String): Seq[String] =
+    // Return list of all objects derived from 'objectName'
+    _mapEachDefinition((definitionName, definition) =>
+      if _getDerivedParents(definition).contains(objectName) then {
+        Some(definitionName)
+      } else { None },
+    )
+
   def _getProperties(definition: String): List[String] =
     _getDefinition(definition).asObject
       .flatMap(
@@ -364,10 +376,14 @@ def getDefinitionName(s: String): String =
 def createDefinition(definition: String): String =
   s"#/${definition_path}/${definition}"
 
-def createEnum(definition: String): Json =
+def createObjectRef(name: String): Json =
+  import scala.util.chaining.scalaUtilChainingOps
+  name.pipe(createDefinition).pipe(createRef)
+
+def createEnum(definition: String, derived: Seq[String] = List()): Json =
   val disc = Json.fromString(definition)
   Json.obj(
-    "enum" -> Json.arr(disc),
+    "enum" -> Json.arr((disc :: derived.map(Json.fromString).toList)*),
     "default" -> disc,
   )
 

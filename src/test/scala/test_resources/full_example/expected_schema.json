@@ -55,10 +55,24 @@
                      }
               },
               "KStoreValue": {
-                     "oneOf": [],
+                     "oneOf": [
+                            {
+                                   "$ref": "#/definitions/BaseA"
+                            },
+                            {
+                                   "$ref": "#/definitions/DerivedA1"
+                            },
+                            {
+                                   "$ref": "#/definitions/DerivedA2"
+                            }
+                     ],
                      "discriminator": {
                             "propertyName": "@type",
-                            "mapping": {}
+                            "mapping": {
+                                   "BaseA$Bean": "#/definitions/BaseA",
+                                   "DerivedA1$Bean": "#/definitions/DerivedA1",
+                                   "DerivedA2$Bean": "#/definitions/DerivedA2"
+                            }
                      }
               },
               "Foo": {
@@ -113,6 +127,65 @@
                                    "$ref": "#/definitions/mobidp.common.Decimal"
                             }
                      ]
+              },
+              "mobidp.persistence.ValueObject": {
+                     "type": "object"
+              },
+              "BaseA": {
+                     "type": "object",
+                     "allOf": [
+                            {
+                                   "$ref": "#/definitions/mobidp.persistence.ValueObject"
+                            }
+                     ],
+                     "properties": {
+                            "@type": {
+                                   "enum": [
+                                          "BaseA$Bean",
+                                          "DerivedA1$Bean",
+                                          "DerivedA2$Bean"
+                                   ],
+                                   "default": "BaseA$Bean"
+                            },
+                            "name": {
+                                   "type": "string"
+                            }
+                     }
+              },
+              "DerivedA1": {
+                     "type": "object",
+                     "allOf": [
+                            {
+                                   "$ref": "#/definitions/BaseA"
+                            }
+                     ],
+                     "properties": {
+                            "@type": {
+                                   "enum": [
+                                          "DerivedA1$Bean"
+                                   ],
+                                   "default": "DerivedA1$Bean"
+                            },
+                            "value": {
+                                   "type": "string"
+                            }
+                     }
+              },
+              "DerivedA2": {
+                     "type": "object",
+                     "allOf": [
+                            {
+                                   "$ref": "#/definitions/BaseA"
+                            }
+                     ],
+                     "properties": {
+                            "@type": {
+                                   "enum": [
+                                          "DerivedA2$Bean"
+                                   ],
+                                   "default": "DerivedA2$Bean"
+                            }
+                     }
               }
        }
 }
