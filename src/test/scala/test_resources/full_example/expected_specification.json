@@ -141,12 +141,12 @@
                             "discriminator": {
                                    "propertyName": "type",
                                    "mapping": {
-                                          "Point": "#/definitions/mobidp.common.Point",
-                                          "MultiPoint": "#/definitions/mobidp.common.MultiPoint",
-                                          "LineString": "#/definitions/mobidp.common.LineString",
-                                          "MultiLineString": "#/definitions/mobidp.common.MultiLineString",
-                                          "Polygon": "#/definitions/mobidp.common.Polygon",
-                                          "MultiPolygon": "#/definitions/mobidp.common.MultiPolygon"
+                                          "Point": "#/components/schemas/mobidp.common.Point",
+                                          "MultiPoint": "#/components/schemas/mobidp.common.MultiPoint",
+                                          "LineString": "#/components/schemas/mobidp.common.LineString",
+                                          "MultiLineString": "#/components/schemas/mobidp.common.MultiLineString",
+                                          "Polygon": "#/components/schemas/mobidp.common.Polygon",
+                                          "MultiPolygon": "#/components/schemas/mobidp.common.MultiPolygon"
                                    }
                             }
                      },

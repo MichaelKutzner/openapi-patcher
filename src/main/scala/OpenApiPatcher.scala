@@ -106,6 +106,17 @@ case class OpenApiPatcher(
 
   def _patchAllRefs(path: List[String])(json: JsonObject): JsonObject =
     val newPath = path.reduceLeft(_ + '/' + _)
+    def patchRef(s: String): Json =
+      Json.fromString(s"#/${newPath}/${getDefinitionName(s)}")
+    def patchDiscriminator(obj: JsonObject): JsonObject =
+      obj("mapping") match
+        case Some(mapping) =>
+          obj.+:(
+            "mapping",
+            mapping.mapObject(_.mapValues(_.withString(patchRef))),
+          )
+        case None => obj
+
     Plated
       .transform[Json](
         _.withObject(o =>
@@ -113,12 +124,13 @@ case class OpenApiPatcher(
             .fromMap(
               o.toMap
                 .map((k, v) =>
-                  k -> Some(v)
-                    .filter(_ => k == "$ref")
-                    .flatMap(_.asString)
-                    .map(s => s"#/${newPath}/${getDefinitionName(s)}")
-                    .map(Json.fromString)
-                    .getOrElse(v),
+                  k -> (
+                    k match
+                      case "$ref" => v.withString(patchRef)
+                      case "discriminator" =>
+                        v.withObject(patchDiscriminator.andThen(_.toJson))
+                      case _ => v,
+                  ),
                 ),
             )
             .toJson,
