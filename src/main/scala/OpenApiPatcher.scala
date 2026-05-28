@@ -78,7 +78,10 @@ case class OpenApiPatcher(
       )(openApiSpec.toJson)
       .asObject
       .get
-    copy(schemaPatcher = schemaPatcher.createKStoreValueObject)
+    copy(
+      openApiSpec = patchedSpec,
+      schemaPatcher = schemaPatcher.createKStoreValueObject,
+    )
 
   def mergedOpenApiSpec: JsonObject =
     val path = List("components", "schemas")
