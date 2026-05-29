@@ -5,6 +5,7 @@ import java.io.FileWriter
 import scala.io.Source
 
 import io.circe.JsonObject
+import io.circe.yaml.scalayaml.printer
 
 def readFile(path: String): String =
   Source.fromFile(path).getLines.mkString("\n")
@@ -12,7 +13,7 @@ def readFile(path: String): String =
 def writeFile(path: String, content: JsonObject): Unit =
   val writer = FileWriter(path)
   try {
-    writer.write(serialize(content))
+    writer.write(printer.print(content.toJson))
   } finally {
     writer.close()
   }

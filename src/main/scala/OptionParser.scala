@@ -37,6 +37,6 @@ object Options:
     Options(
       builder.openApiSpecPath.get,
       builder.jsonSchemaPath.get,
-      builder.outputPrefixPath.get + "openapi.json",
-      builder.outputPrefixPath.get + "schema.json",
+      builder.outputPrefixPath.get + "openapi.yaml",
+      builder.outputPrefixPath.get + "schema.yaml",
     )
