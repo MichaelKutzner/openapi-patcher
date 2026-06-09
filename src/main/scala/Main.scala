@@ -26,3 +26,4 @@ package patcher
   println(options)
   writeFile(options.outputOpenApiSpecPath, patched.mergedOpenApiSpec)
   writeFile(options.outputJsonSchemaPath, patched.schema)
+  writeFile(options.outputJsonSchemaYamlPath, patched.schema)

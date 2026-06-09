@@ -13,7 +13,11 @@ def readFile(path: String): String =
 def writeFile(path: String, content: JsonObject): Unit =
   val writer = FileWriter(path)
   try {
-    writer.write(printer.print(content.toJson))
+    if path.endsWith("yaml") then {
+      writer.write(printer.print(content.toJson))
+    } else {
+      writer.write(serialize(content))
+    }
   } finally {
     writer.close()
   }

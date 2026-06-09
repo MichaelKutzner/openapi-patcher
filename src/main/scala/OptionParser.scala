@@ -5,8 +5,9 @@ import scala.annotation.tailrec
 case class Options(
     openApiSpecPath: String,
     jsonSchemaPath: String,
-    outputOpenApiSpecPath: String,
-    outputJsonSchemaPath: String,
+    outputOpenApiSpecPath: String,  // YAML
+    outputJsonSchemaPath: String,  // JSON
+    outputJsonSchemaYamlPath: String,  // YAML
 )
 
 object Options:
@@ -38,5 +39,6 @@ object Options:
       builder.openApiSpecPath.get,
       builder.jsonSchemaPath.get,
       builder.outputPrefixPath.get + "openapi.yaml",
+      builder.outputPrefixPath.get + "schema.json",
       builder.outputPrefixPath.get + "schema.yaml",
     )
