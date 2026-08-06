@@ -25,5 +25,6 @@ package patcher
   val patched = patcher.fixAll
   println(options)
   writeFile(options.outputOpenApiSpecPath, patched.mergedOpenApiSpec)
+  writeFile(options.outputOpenApiSpecJsonPath, patched.mergedOpenApiSpec)
   writeFile(options.outputJsonSchemaPath, patched.schema)
   writeFile(options.outputJsonSchemaYamlPath, patched.schema)

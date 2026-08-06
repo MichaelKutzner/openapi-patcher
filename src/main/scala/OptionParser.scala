@@ -6,6 +6,7 @@ case class Options(
     openApiSpecPath: String,
     jsonSchemaPath: String,
     outputOpenApiSpecPath: String,  // YAML
+    outputOpenApiSpecJsonPath: String,  // JSON
     outputJsonSchemaPath: String,  // JSON
     outputJsonSchemaYamlPath: String,  // YAML
 )
@@ -38,7 +39,8 @@ object Options:
     Options(
       builder.openApiSpecPath.get,
       builder.jsonSchemaPath.get,
-      builder.outputPrefixPath.get + "openapi.yaml",
+      builder.outputPrefixPath.get + "openapi.yaml",  // Not used?
+      builder.outputPrefixPath.get + "openapi.json",
       builder.outputPrefixPath.get + "schema.json",
-      builder.outputPrefixPath.get + "schema.yaml",
+      builder.outputPrefixPath.get + "schema.yaml",  // Not used?
     )
